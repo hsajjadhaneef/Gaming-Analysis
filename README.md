@@ -21,5 +21,7 @@
 𝐓𝐨𝐨𝐥𝐬 & 𝐓𝐞𝐜𝐡:
 
 Google BigQuery (SQL)
+
 Looker Studio (Dashboards)
+
 Google Analytics (Firebase Events)
