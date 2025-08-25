@@ -17,7 +17,9 @@
 🛠 𝐄𝐯𝐞𝐧𝐭 𝐃𝐞𝐛𝐮𝐠𝐠𝐢𝐧𝐠 – Tracking app crashes and exceptions (fatal & non-fatal).
 
 🎮 Gameplay Analysis – % of users playing each game, gameplay combinations, and user segmentation by ad viewers.
+
 𝐓𝐨𝐨𝐥𝐬 & 𝐓𝐞𝐜𝐡:
+
 Google BigQuery (SQL)
 Looker Studio (Dashboards)
 Google Analytics (Firebase Events)
