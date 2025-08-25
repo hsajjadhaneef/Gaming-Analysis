@@ -1,7 +1,9 @@
 # Gaming-Analysis
 Data analysis projects focused on gaming industry metrics and insights.
 𝐓𝐡𝐢𝐬 𝐩𝐫𝐨𝐣𝐞𝐜𝐭 𝐜𝐨𝐧𝐭𝐚𝐢𝐧𝐬 𝐒𝐐𝐋 𝐪𝐮𝐞𝐫𝐢𝐞𝐬 𝐰𝐫𝐢𝐭𝐭𝐞𝐧 𝐢𝐧 𝐁𝐢𝐠𝐐𝐮𝐞𝐫𝐲 𝐟𝐨𝐫 𝐚𝐧𝐚𝐥𝐲𝐳𝐢𝐧𝐠 𝐠𝐚𝐦𝐢𝐧𝐠 𝐝𝐚𝐭𝐚 𝐞𝐱𝐩𝐨𝐫𝐭𝐞𝐝 𝐟𝐫𝐨𝐦 𝐆𝐨𝐨𝐠𝐥𝐞 𝐀𝐧𝐚𝐥𝐲𝐭𝐢𝐜𝐬/𝐅𝐢𝐫𝐞𝐛𝐚𝐬𝐞.
-📊 Engagement – Average engagement time per session & per active user.
+
+
+📊 𝐄𝐧𝐠𝐚𝐠𝐞𝐦𝐞𝐧𝐭 – Average engagement time per session & per active user.
 
 ⏱𝐒𝐞𝐬𝐬𝐢𝐨𝐧 𝐀𝐧𝐚𝐥𝐲𝐬𝐢𝐬 – Average session duration by country and version.
 
