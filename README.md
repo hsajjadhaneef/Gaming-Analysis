@@ -6,7 +6,9 @@
 𝐓𝐡𝐢𝐬 𝐩𝐨𝐫𝐭𝐟𝐨𝐥𝐢𝐨 𝐩𝐫𝐨𝐣𝐞𝐜𝐭 𝐝𝐞𝐦𝐨𝐧𝐬𝐭𝐫𝐚𝐭𝐞𝐬:
 
 𝗗𝗲𝗲𝗽 𝗱𝗼𝗺𝗮𝗶𝗻 𝗸𝗻𝗼𝘄𝗹𝗲𝗱𝗴𝗲 𝗶𝗻 𝗴𝗮𝗺𝗶𝗻𝗴 𝗞𝗣𝗜𝘀 (e.g., ARPDAU, LTV, Retention, ECPM).
+
 𝗦𝗰𝗮𝗹𝗮𝗯𝗹𝗲 𝗦𝗤𝗟 𝗲𝗻𝗴𝗶𝗻𝗲𝗲𝗿𝗶𝗻𝗴 with CTEs, window functions, and date partitioning for efficient querying on terabyte-scale datasets.
+
 𝗕𝘂𝘀𝗶𝗻𝗲𝘀𝘀 𝗶𝗺𝗽𝗮𝗰𝘁: Queries that inform A/B tests, cohort analysis, and funnel optimization—proven to increase retention by 15-20% in similar projects.
 
 𝐖𝐡𝐞𝐭𝐡𝐞𝐫 𝐲𝐨𝐮'𝐫𝐞 𝐚 𝐫𝐞𝐜𝐫𝐮𝐢𝐭𝐞𝐫 𝐬𝐞𝐞𝐤𝐢𝐧𝐠 𝐚𝐧𝐚𝐥𝐲𝐭𝐢𝐜𝐬 𝐞𝐱𝐩𝐞𝐫𝐭𝐢𝐬𝐞 𝐨𝐫 𝐚 𝐝𝐚𝐭𝐚-𝐝𝐫𝐢𝐯𝐞𝐧 𝐨𝐫𝐠𝐚𝐧𝐢𝐳𝐚𝐭𝐢𝐨𝐧 𝐥𝐨𝐨𝐤𝐢𝐧𝐠 𝐟𝐨𝐫 𝐩𝐫𝐨𝐝𝐮𝐜𝐭𝐢𝐨𝐧-𝐫𝐞𝐚𝐝𝐲 𝐒𝐐𝐋 𝐬𝐨𝐥𝐮𝐭𝐢𝐨𝐧𝐬,
@@ -35,25 +37,42 @@ I've organized the queries by core gaming analytics categories. Each section inc
 𝐐𝐮𝐞𝐫𝐲: 𝐀𝐯𝐞𝐫𝐚𝐠𝐞 𝐄𝐧𝐠𝐚𝐠𝐞𝐦𝐞𝐧𝐭 𝐓𝐢𝐦𝐞 𝐏𝐞𝐫 𝐒𝐞𝐬𝐬𝐢𝐨𝐧
 
 WITH engagement_data AS (
+
   SELECT 
+  
     parsed_event_date AS event_date,
+    
     user_pseudo_id, 
+    
     user_props.value.int_value AS session_id,  -- Extract session ID
+    
     SAFE_DIVIDE(SUM(CAST(event_params.value.int_value AS INT64)), 1000) AS total_engagement_seconds  -- Convert ms to seconds
+    
   FROM `game-data-analytics.analytics_343585106.events_last_30_days`,
+  
   UNNEST(event_params) AS event_params,
+  
   UNNEST(user_properties) AS user_props
+  
   WHERE event_params.key = 'engagement_time_msec'
+  
     AND user_props.key = 'ga_session_id'
+    
     AND is_active_user = TRUE
+    
   GROUP BY event_date, user_pseudo_id, session_id
+  
 )
 
 SELECT 
   FORMAT_DATE('%Y-%m-%d', event_date) AS event_date,
+  
   SAFE_DIVIDE(SUM(total_engagement_seconds), COUNT(DISTINCT session_id)) AS avg_engagement_time_per_session
+  
 FROM engagement_data
+
 GROUP BY event_date
+
 ORDER BY event_date DESC;
 
 
@@ -71,54 +90,98 @@ Event DateAvg Engagement Time (seconds)
 
 
 WITH session_events AS (
+
   SELECT 
+  
     user_pseudo_id, 
+    
     geo.country AS country,
+    
     parsed_event_date AS event_date,
+    
     event_name, 
+    
     event_timestamp 
+    
   FROM `game-data-analytics.analytics_343585106.events_last_30_days`
+  
   WHERE event_name IN ('session_start', 'session_end')
+  
 ),
 
 duration_calc AS (
+
   SELECT 
+  
     event_date,
+    
     country,  
+    
     user_pseudo_id,
+    
     COUNTIF(event_name = 'session_start') AS session_count,
+    
     CAST((MAX(event_timestamp) - MIN(event_timestamp)) / 1000000 AS INT64) AS total_seconds
+    
   FROM session_events
+  
   GROUP BY event_date, country, user_pseudo_id
+  
 ),
 
 average_session AS (
+
   SELECT 
+  
     event_date,
+    
     country,
+    
     COUNT(DISTINCT user_pseudo_id) AS active_users,
+    
     SUM(total_seconds) AS total_engagement_time,
+    
     SUM(session_count) AS total_sessions,
+    
     CAST(SAFE_DIVIDE(SUM(total_seconds), NULLIF(SUM(session_count), 0)) AS INT64) AS avg_session_duration_seconds
+
+    
   FROM duration_calc
+  
   GROUP BY event_date, country
+  
   HAVING active_users >= 100
+  
 )
 
 SELECT 
+
   FORMAT_DATE('%Y-%m-%d', event_date) AS event_date,
+  
   country,
+  
   avg_session_duration_seconds,
+  
   FORMAT("%02d:%02d:%02d",
+  
          DIV(avg_session_duration_seconds, 3600),
+         
          MOD(DIV(avg_session_duration_seconds, 60), 60),
+         
          MOD(avg_session_duration_seconds, 60)
+         
   ) AS avg_session_duration_hms
+  
 FROM average_session
+
 ORDER BY event_date DESC;
+
 𝐄𝐱𝐩𝐞𝐜𝐭𝐞𝐝 𝐈𝐧𝐬𝐢𝐠𝐡𝐭𝐬: 
+
 Event Date, Country,   Avg Duration (HMS)
+
 2025-09-17 United States 00:01:23
+
 2025-09-17  India    00:00:56
 
 Why It Matters: Geo-targeted optimizations (e.g., shorter sessions in emerging markets) can reduce churn by 12%.
@@ -133,156 +196,300 @@ Why It Matters: Geo-targeted optimizations (e.g., shorter sessions in emerging m
 𝐐𝐮𝐞𝐫𝐲: 𝐀𝐑𝐏𝐃𝐀𝐔 (𝐀𝐯𝐞𝐫𝐚𝐠𝐞 𝐑𝐞𝐯𝐞𝐧𝐮𝐞 𝐏𝐞𝐫 𝐃𝐚𝐢𝐥𝐲 𝐀𝐜𝐭𝐢𝐯𝐞 𝐔𝐬𝐞𝐫)
 
 WITH daily_user_revenue AS (
+
   SELECT 
+  
     parsed_event_date AS event_date,
+    
     user_pseudo_id,
+    
     SUM(ep.value.double_value) AS revenue
+    
   FROM `game-data-analytics.analytics_343585106.events_last_30_days`, 
+  
   UNNEST(event_params) AS ep
+  
   WHERE event_name IN ('ad_impression')
+  
     AND ep.key = 'value'
+    
     AND is_active_user = TRUE
+    
   GROUP BY event_date, user_pseudo_id
+  
 )
+
 SELECT 
+
   FORMAT_DATE('%Y-%m-%d', event_date) AS event_date,
+  
   SAFE_DIVIDE(SUM(revenue), COUNT(DISTINCT user_pseudo_id)) AS ARPDAU
+  
 FROM daily_user_revenue
+
 GROUP BY event_date
+
 ORDER BY event_date DESC;
 
+
 𝐄𝐱𝐩𝐞𝐜𝐭𝐞𝐝 𝐈𝐧𝐬𝐢𝐠𝐡𝐭𝐬:
+
 
 ARPDAU trending at $0.05—target high-value users for rewarded ads.
 
 𝐐𝐮𝐞𝐫𝐲: 𝐞𝐂𝐏𝐌 𝐀𝐧𝐚𝐥𝐲𝐬𝐢𝐬 (𝐛𝐲 𝐏𝐞𝐫𝐜𝐞𝐧𝐭𝐢𝐥𝐞) 
 
 WITH
+
+
   ad_data AS (
+  
   SELECT
+  
     PARSE_DATE('%Y%m%d', event_date) AS event_date,
+    
     ep.value.string_value AS ad_format,
+    
     user_pseudo_id,
+    
     app_info.version AS app_version,
+    
     geo.country AS country,
+    
     COUNT(*) AS total_impressions,
+    
     SUM(COALESCE(ep_value.value.double_value, 0)) AS total_earning
+    
   FROM
+  
     `game-data-analytics.analytics_381941714.last_30_days`,
+    
     UNNEST(event_params) AS ep
+    
   LEFT JOIN
+  
     UNNEST(event_params) AS ep_value
+    
   ON
+  
     ep_value.key = "value"
+    
   WHERE
+  
     event_name = "ad_impression"
+    
     AND ep.key = "ad_format"
+    
   GROUP BY
+  
     event_date,
+
     ad_format,
+    
     user_pseudo_id,
+    
     app_version,
+    
     country ),
+    
   ecpm_data AS (
+  
   SELECT
+  
     user_pseudo_id,
+    
     (total_earning / total_impressions * 1000) AS ecpm,
+    
     ad_format,
+    
     event_date,
+    
     country
+    
   FROM
+  
     `ad_data` ),
+    
   percentiles AS (
+  
   SELECT
+  
     user_pseudo_id,
+    
     ecpm,
+    
     ad_format,
+    
     event_date,
+    
     country,
+    
     NTILE(4) OVER (PARTITION BY event_date, country, ad_format ORDER BY ecpm) AS ecpm_percentile
+    
   FROM
+  
     `ecpm_data` )
+    
 SELECT
+
   event_date,
+  
   country,
+  
   ad_format,
+  
   ecpm_percentile,
+  
   COUNT(DISTINCT user_pseudo_id) AS user_count,
+  
   AVG(ecpm) AS avg_ecpm
+  
 FROM
   `percentiles`
+  
 GROUP BY
+
   event_date,
+  
   country,
+  
   ad_format,
+  
   ecpm_percentile
+  
 ORDER BY
+
   event_date,
+  
   country,
+  
   ad_format,
+  
   ecpm_percentile;WITH
+  
   ad_data AS (
+  
   SELECT
+  
     PARSE_DATE('%Y%m%d', event_date) AS event_date,
+    
     ep.value.string_value AS ad_format,
+    
     user_pseudo_id,
+    
     app_info.version AS app_version,
+    
     geo.country AS country,
+    
     COUNT(*) AS total_impressions,
+    
     SUM(COALESCE(ep_value.value.double_value, 0)) AS total_earning
+    
   FROM
+  
     `game-data-analytics.analytics_381941714.last_30_days`,
+    
     UNNEST(event_params) AS ep
+    
   LEFT JOIN
+  
     UNNEST(event_params) AS ep_value
+    
   ON
+  
     ep_value.key = "value"
   WHERE
+  
     event_name = "ad_impression"
+    
     AND ep.key = "ad_format"
+    
   GROUP BY
+  
     event_date,
+    
     ad_format,
+    
     user_pseudo_id,
+    
     app_version,
+    
     country ),
+    
   ecpm_data AS (
+  
   SELECT
+  
     user_pseudo_id,
+    
     (total_earning / total_impressions * 1000) AS ecpm,
+    
     ad_format,
+    
     event_date,
+    
     country
+    
   FROM
+  
     `ad_data` ),
+    
   percentiles AS (
+  
   SELECT
+  
     user_pseudo_id,
+    
     ecpm,
+    
     ad_format,
+    
     event_date,
+    
     country,
+    
     NTILE(4) OVER (PARTITION BY event_date, country, ad_format ORDER BY ecpm) AS ecpm_percentile
+    
   FROM
+  
     `ecpm_data` )
+    
 SELECT
+
   event_date,
+  
   country,
+  
   ad_format,
+  
   ecpm_percentile,
+  
   COUNT(DISTINCT user_pseudo_id) AS user_count,
+  
   AVG(ecpm) AS avg_ecpm
+  
 FROM
+
   `percentiles`
+  
 GROUP BY
+
   event_date,
+  
   country,
+  
   ad_format,
+  
   ecpm_percentile
+  
 ORDER BY
+
   event_date,
+  
   country,
+  
   ad_format,
+  
   ecpm_percentile;
   
 𝐄𝐱𝐩𝐞𝐜𝐭𝐞𝐝 𝐈𝐧𝐬𝐢𝐠𝐡𝐭𝐬: 
@@ -304,32 +511,58 @@ Why It Matters: Identifying top 25% users for premium ads lifted eCPM by 25% in 
 𝐐𝐮𝐞𝐫𝐲: 𝐃𝐚𝐲-𝐖𝐢𝐬𝐞 𝐑𝐞𝐭𝐞𝐧𝐭𝐢𝐨𝐧 𝐑𝐚𝐭𝐞
 
 WITH first_open AS (
+
   SELECT 
+  
     user_pseudo_id, 
-    PARSE_DATE('%Y%m%d', event_date) AS first_open_date 
+    
+    PARSE_DATE('%Y%m%d'
+    
+    , event_date) AS first_open_date 
+    
   FROM `game-data-analytics.analytics_343585106.events_last_30_days`
+  
   WHERE event_name = 'first_open'
+  
 ), 
+
 returning_users AS (
+
   SELECT 
+  
     user_pseudo_id, 
+    
     PARSE_DATE('%Y%m%d', event_date) AS return_date
+    
   FROM `game-data-analytics.analytics_343585106.events_last_30_days`
+  
 )
 SELECT 
+
   f.first_open_date AS event_date,
+  
   COUNT(DISTINCT f.user_pseudo_id) AS total_new_users,
+  
   -- D1
+  
   COUNT(DISTINCT CASE WHEN r.return_date = DATE_ADD(f.first_open_date, INTERVAL 1 DAY) THEN f.user_pseudo_id END) AS D1_retention,
+  
   ROUND(
+  
     COUNT(DISTINCT CASE WHEN r.return_date = DATE_ADD(f.first_open_date, INTERVAL 1 DAY) THEN f.user_pseudo_id END) * 100.0
+    
     / COUNT(DISTINCT f.user_pseudo_id),
     2
+    
   ) AS D1_retention_rate,
+  
   -- D3 & D7 similar...
 FROM first_open f
+
 LEFT JOIN returning_users r ON f.user_pseudo_id = r.user_pseudo_id
+
 GROUP BY event_date
+
 ORDER BY event_date DESC;
 
 𝐄𝐱𝐩𝐞𝐜𝐭𝐞𝐝 𝐈𝐧𝐬𝐢𝐠𝐡𝐭𝐬: : D1 Retention: 28%—push push notifications for D7 spike.
@@ -339,52 +572,93 @@ ORDER BY event_date DESC;
 
 𝐐𝐮𝐞𝐫𝐲: 𝐂𝐨𝐡𝐨𝐫𝐭-𝐁𝐚𝐬𝐞𝐝 𝐋𝐓𝐕
 
-WITH cohort_users AS (
+WITH cohort_users AS 
+
   SELECT
+  
     user_pseudo_id,
+    
     MIN(DATE(TIMESTAMP_MICROS(event_timestamp))) AS cohort_start_date,
+    
     ANY_VALUE(geo.country) AS country
+    
   FROM `game-data-analytics.analytics_343585106.events_last_30_days`
+  
   WHERE event_name = 'first_open'
+  
   GROUP BY user_pseudo_id
+  
 ),
 -- Additional CTEs for revenue aggregation and cumulative LTV...
+
 aggregated_data AS (
+
   SELECT
+  
     d.cohort_start_date AS date,
+    
     d.country,
+    
     d.day_n,
+    
     c.cohort_size,
+    
     d.active_users,
+    
     d.daily_cohort_revenue,
+    
     SUM(d.daily_cohort_revenue) OVER (
+    
       PARTITION BY d.cohort_start_date, d.country 
+      
       ORDER BY d.day_n 
+      
       ROWS UNBOUNDED PRECEDING
+      
     ) AS cumulative_revenue,
+    
     SAFE_DIVIDE(
+    
       SUM(d.daily_cohort_revenue) OVER (
+      
         PARTITION BY d.cohort_start_date, d.country 
+        
         ORDER BY d.day_n 
+        
         ROWS UNBOUNDED PRECEDING
+        
       ),
       c.cohort_size
+      
     ) AS cumulative_ltv
+    
   FROM daily_cohort_revenue d
+  
   JOIN cohort_size c 
+  
     ON d.cohort_start_date = c.cohort_start_date 
+    
    AND d.country = c.country
 )
 
 SELECT
+
   date,
+  
   country,
+  
   day_n,
+  
   cohort_size,
+  
   active_users,
+  
   daily_cohort_revenue,
+  
   cumulative_revenue,
+  
   cumulative_ltv
+  
 FROM aggregated_data;
 
 𝟒. 𝐅𝐮𝐧𝐧𝐞𝐥 & 𝐆𝐚𝐦𝐞𝐩𝐥𝐚𝐲 𝐀𝐧𝐚𝐥𝐲𝐬𝐢𝐬: 𝐒𝐩𝐨𝐭𝐭𝐢𝐧𝐠 𝐃𝐫𝐨𝐩-𝐎𝐟𝐟𝐬
@@ -394,50 +668,94 @@ FROM aggregated_data;
 𝐐𝐮𝐞𝐫𝐲: 𝐋𝐞𝐯𝐞𝐥 𝐃𝐫𝐨𝐩-𝐎𝐟𝐟 𝐏𝐞𝐫𝐜𝐞𝐧𝐭𝐚𝐠𝐞
 
 WITH level_events AS (
+
   SELECT  
+  
     user_pseudo_id,  
+    
     app_info.version AS app_version,  
+    
     PARSE_DATE('%Y%m%d', event_date) AS event_date,
+    
     event_name,
+    
     CASE  
+    
       WHEN event_name = 'first_open' THEN 0  
+      
       WHEN event_name = 'Level_Started0' THEN 0
+      
       WHEN event_name LIKE 'Level_Started%' THEN SAFE_CAST(REGEXP_EXTRACT(event_name, r'Level_Started(\d+)') AS INT64)  
+      
       ELSE NULL  
+      
     END AS level  
+
+    
   FROM `game-data-analytics.analytics_343585106.events_last_30_days`
+  
   WHERE event_name LIKE 'Level_Started%' OR event_name IN ('first_open', 'Level_Started0')
+  
 ),
 -- Additional CTEs for ranking and drop rates...
+
 drop_rates AS (  
+
   SELECT  
+  
     l1.level,  
+    
     l1.app_version,  
+    
     l1.event_date,
+    
     l1.event_name AS current_event,  
+    
     l1.total_users AS users_at_current_level,  
+    
     l2.level AS previous_level,  
+    
     l2.total_users AS users_at_previous_level,  
+    
     CASE  
+    
       WHEN NULLIF(l2.total_users, 0) IS NULL THEN NULL  
+      
       ELSE GREATEST(0, ROUND(100 * (1 - SAFE_DIVIDE(l1.total_users, NULLIF(l2.total_users, 0))), 4))  
+      
     END AS drop_rate_percentage  
+    
   FROM ranked_levels l1  
+  
   LEFT JOIN ranked_levels l2  
+  
     ON l1.app_version = l2.app_version 
+    
     AND l1.event_date = l2.event_date
+    
     AND l1.seq_id = l2.seq_id + 1  
+    
 )  
 
 SELECT  
+
   level,  
+  
   app_version,  
+  
   event_date,
+  
   current_event AS event_name,  
+  
   users_at_current_level AS total_users,  
+  
   COALESCE(drop_rate_percentage, 0) AS drop_rate_percentage  
+
+
 FROM drop_rates  
+
 ORDER BY event_date, app_version, level ASC;
+
 
 
 𝐄𝐱𝐩𝐞𝐜𝐭𝐞𝐝 𝐈𝐧𝐬𝐢𝐠𝐡𝐭𝐬: 
@@ -448,58 +766,110 @@ ORDER BY event_date, app_version, level ASC;
 
 WITH
   game_events AS (
+  
   SELECT
+  
     user_pseudo_id,
+    
     event_name,
+    
     DATE(TIMESTAMP_MICROS(event_timestamp)) AS event_date,
+    
     app_info.version AS app_version
+    
   FROM
+  
     `game-data-analytics`.`analytics_341414650`.`events_last_30_days`
+    
   WHERE
+  
     event_name IN ( 'break_screen_game_click', 'slime_game_click', /* ... other games */ )
+    
   ),
+  
   user_game_combinations AS (
+  
   SELECT
+  
     user_pseudo_id,
+    
     STRING_AGG(DISTINCT event_name, ', ' ORDER BY event_name) AS game_names,
+    
     COUNT(DISTINCT event_name) AS games_played_count,
+    
     MIN(event_date) AS first_play_date,
+    
     ANY_VALUE(app_version) AS app_version
+    
   FROM
+  
     `game_events`
+    
   GROUP BY
+  
     user_pseudo_id
+    
   ),
+  
   combination_stats AS (
+  
   SELECT
+  
     games_played_count,
+    
     game_names,
+    
     COUNT(user_pseudo_id) AS user_count,
+    
     ANY_VALUE(first_play_date) AS sample_event_date,
+    
     ANY_VALUE(app_version) AS sample_app_version
+    
   FROM
+  
     `user_game_combinations`
+    
   GROUP BY
+  
     games_played_count,
+    
     game_names
+    
   ),
   total_users AS (
+  
   SELECT
+  
     COUNT(DISTINCT user_pseudo_id) AS total
+    
   FROM
+  
     `game_events` )
+    
 SELECT
+
   cs.games_played_count AS user_played_games,
+  
   cs.game_names,
+  
   cs.user_count,
+  
   ROUND((cs.user_count / t.total) * 100, 2) AS percent_of_users,
+  
   cs.sample_event_date AS event_date,
+  
   cs.sample_app_version AS app_version
+  
 FROM
+
   `combination_stats` AS cs,
+  
   `total_users` AS t
+  
 ORDER BY
+
   cs.user_count DESC;
+  
 
 𝐄𝐱𝐩𝐞𝐜𝐭𝐞𝐝 𝐈𝐧𝐬𝐢𝐠𝐡𝐭𝐬: 35% play 3+ games—cross-promote top combos.
 
@@ -508,24 +878,43 @@ ORDER BY
 𝐏𝐫𝐨𝐛𝐥𝐞𝐦 𝐒𝐭𝐚𝐭𝐞𝐦𝐞𝐧𝐭: 𝐂𝐫𝐚𝐬𝐡𝐞𝐬 𝐤𝐢𝐥𝐥 𝐫𝐞𝐭𝐞𝐧𝐭𝐢𝐨𝐧—𝐝𝐞𝐛𝐮𝐠 𝐪𝐮𝐞𝐫𝐢𝐞𝐬 𝐭𝐫𝐚𝐜𝐤 𝐟𝐚𝐭𝐚𝐥 𝐞𝐱𝐜𝐞𝐩𝐭𝐢𝐨𝐧𝐬 𝐭𝐨 𝐩𝐫𝐢𝐨𝐫𝐢𝐭𝐢𝐳𝐞 𝐛𝐮𝐠 𝐟𝐢𝐱𝐞𝐬.
 
 SELECT
+
   DISTINCT user_pseudo_id,
+  
   COUNT(*) AS total_exception,
+  
   SUM(CASE WHEN ep.key = 'fatal' THEN 1 ELSE 0 END) AS fatal_count,
+  
   SUM(CASE WHEN ep.key != 'fatal' THEN 1 ELSE 0 END) AS non_fatal_count,
+  
   PARSE_DATE('%Y%m%d', CAST(event_date AS STRING)) AS event_date,
+  
   app_info.version AS app_version
+  
 FROM
+
   game-data-analytics.analytics_343585106.events_last_30_days,
+  
   UNNEST(event_params) AS ep 
+  
 WHERE event_name='app_exception'
+
 GROUP BY
+
   user_pseudo_id,
+  
   event_date,
+  
   app_info.version
+  
 ORDER BY
+
   fatal_count DESC;
+  
 𝐑𝐎𝐈 𝐄𝐱𝐚𝐦𝐩𝐥𝐞: Implemented similar retention queries , increasing D7 retention from 12% to 18%
+
 𝐕𝐢𝐬𝐮𝐚𝐥𝐢𝐳𝐚𝐭𝐢𝐨𝐧: Pair with Looker Studio for interactive dashboards (code snippets included).
+
 𝐒𝐜𝐚𝐥𝐚𝐛𝐢𝐥𝐢𝐭𝐲: Queries optimized for partitioned tables; handle 1M+ events/day.
 
 
