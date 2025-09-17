@@ -14,18 +14,26 @@
 𝐫𝐢𝐠𝐨𝐫𝐨𝐮𝐬𝐥𝐲 𝐭𝐞𝐬𝐭𝐞𝐝 𝐨𝐧 𝐡𝐢𝐠𝐡-𝐯𝐨𝐥𝐮𝐦𝐞 𝐝𝐚𝐭𝐚 𝐟𝐫𝐨𝐦 𝐚 𝐭𝐨𝐩-𝐩𝐞𝐫𝐟𝐨𝐫𝐦𝐢𝐧𝐠 𝐦𝐨𝐛𝐢𝐥𝐞 𝐚𝐩𝐩𝐥𝐢𝐜𝐚𝐭𝐢𝐨𝐧.
 
 𝗧𝗲𝗰𝗵 𝗦𝘁𝗮𝗰𝗸: Google BigQuery, SQL (Standard SQL), Firebase Analytics, Looker Studio (for visualization integration).
+
 📊 Key Metrics & Problem Statements
+
 I've organized the queries by core gaming analytics categories. Each section includes:
+
 𝗣𝗿𝗼𝗯𝗹𝗲𝗺 𝗦𝘁𝗮𝘁𝗲𝗺𝗲𝗻𝘁:: The business challenge it solves.
+
 𝗤𝘂𝗲𝗿𝘆:  The full, optimized SQL code.
+
 𝗘𝘅𝗽𝗲𝗰𝘁𝗲𝗱 𝗜𝗻𝘀𝗶𝗴𝗵𝘁𝘀: Sample outputs and strategic recommendations.
 
 1. Engagement Metrics: Measuring Session Quality
+   
 𝐏𝐫𝐨𝐛𝐥𝐞𝐦 𝐒𝐭𝐚𝐭𝐞𝐦𝐞𝐧𝐭:
+
  1. 𝐈𝐧 𝐡𝐲𝐩𝐞𝐫-𝐜𝐚𝐬𝐮𝐚𝐥 𝐠𝐚𝐦𝐞𝐬, 𝐬𝐡𝐨𝐫𝐭 𝐚𝐭𝐭𝐞𝐧𝐭𝐢𝐨𝐧 𝐬𝐩𝐚𝐧𝐬 𝐦𝐞𝐚𝐧 𝐥𝐨𝐰 𝐞𝐧𝐠𝐚𝐠𝐞𝐦𝐞𝐧𝐭 𝐥𝐞𝐚𝐝𝐬 𝐭𝐨 𝐜𝐡𝐮𝐫𝐧. 𝐖𝐞 𝐧𝐞𝐞𝐝 𝐭𝐨 𝐭𝐫𝐚𝐜𝐤 𝐚𝐯𝐞𝐫𝐚𝐠𝐞 𝐬𝐞𝐬𝐬𝐢𝐨𝐧 𝐝𝐮𝐫𝐚𝐭𝐢𝐨𝐧
 𝐚𝐧𝐝 𝐞𝐧𝐠𝐚𝐠𝐞𝐦𝐞𝐧𝐭 𝐭𝐢𝐦𝐞 𝐭𝐨 𝐢𝐝𝐞𝐧𝐭𝐢𝐟𝐲 𝐟𝐫𝐢𝐜𝐭𝐢𝐨𝐧 𝐩𝐨𝐢𝐧𝐭𝐬 𝐚𝐧𝐝 𝐭𝐞𝐬𝐭 𝐔𝐗 𝐢𝐦𝐩𝐫𝐨𝐯𝐞𝐦𝐞𝐧𝐭𝐬 (𝐞.𝐠., 𝐨𝐧𝐛𝐨𝐚𝐫𝐝𝐢𝐧𝐠 𝐭𝐰𝐞𝐚𝐤𝐬).
 
 𝐐𝐮𝐞𝐫𝐲: 𝐀𝐯𝐞𝐫𝐚𝐠𝐞 𝐄𝐧𝐠𝐚𝐠𝐞𝐦𝐞𝐧𝐭 𝐓𝐢𝐦𝐞 𝐏𝐞𝐫 𝐒𝐞𝐬𝐬𝐢𝐨𝐧
+
 WITH engagement_data AS (
   SELECT 
     parsed_event_date AS event_date,
@@ -52,8 +60,11 @@ ORDER BY event_date DESC;
 𝐄𝐱𝐩𝐞𝐜𝐭𝐞𝐝 𝐈𝐧𝐬𝐢𝐠𝐡𝐭𝐬:
 
 Event DateAvg Engagement Time (seconds)
+
 2025-09-17    45.2
+
 2025-09-16    42.8
+
 𝐑𝐞𝐜𝐨𝐦𝐦𝐞𝐧𝐝𝐚𝐭𝐢𝐨𝐧: If <30s, A/B test level difficulty. Business Impact: +10% session time correlates to 5% revenue uplift via more ad views.
 
 𝐐𝐮𝐞𝐫𝐲:  𝐀𝐯𝐞𝐫𝐚𝐠𝐞 𝐒𝐞𝐬𝐬𝐢𝐨𝐧 𝐃𝐮𝐫𝐚𝐭𝐢𝐨𝐧𝐬 (𝐛𝐲 𝐂𝐨𝐮𝐧𝐭𝐫𝐲)
@@ -114,7 +125,9 @@ Why It Matters: Geo-targeted optimizations (e.g., shorter sessions in emerging m
 
 𝐌𝐨𝐧𝐞𝐭𝐢𝐳𝐚𝐭𝐢𝐨𝐧 𝐌𝐞𝐭𝐫𝐢𝐜𝐬: 𝐎𝐩𝐭𝐢𝐦𝐢𝐳𝐢𝐧𝐠 𝐀𝐝 𝐑𝐞𝐯𝐞𝐧𝐮𝐞
 
-𝐏𝐫𝐨𝐛𝐥𝐞𝐦 𝐒𝐭𝐚𝐭𝐞𝐦𝐞𝐧𝐭: 𝐀𝐝 𝐢𝐦𝐩𝐫𝐞𝐬𝐬𝐢𝐨𝐧𝐬 𝐝𝐫𝐢𝐯𝐞 𝟗𝟎% 𝐨𝐟 𝐫𝐞𝐯𝐞𝐧𝐮𝐞 𝐢𝐧 𝐟𝐫𝐞𝐞-𝐭𝐨-𝐩𝐥𝐚𝐲 𝐠𝐚𝐦𝐞𝐬, 𝐛𝐮𝐭 𝐥𝐨𝐰 𝐄𝐂𝐏𝐌 𝐨𝐫 𝐀𝐑𝐏𝐃𝐀𝐔 𝐬𝐢𝐠𝐧𝐚𝐥𝐬 𝐩𝐨𝐨𝐫 𝐭𝐚𝐫𝐠𝐞𝐭𝐢𝐧𝐠.
+𝐏𝐫𝐨𝐛𝐥𝐞𝐦 𝐒𝐭𝐚𝐭𝐞𝐦𝐞𝐧𝐭:
+
+𝐀𝐝 𝐢𝐦𝐩𝐫𝐞𝐬𝐬𝐢𝐨𝐧𝐬 𝐝𝐫𝐢𝐯𝐞 𝟗𝟎% 𝐨𝐟 𝐫𝐞𝐯𝐞𝐧𝐮𝐞 𝐢𝐧 𝐟𝐫𝐞𝐞-𝐭𝐨-𝐩𝐥𝐚𝐲 𝐠𝐚𝐦𝐞𝐬, 𝐛𝐮𝐭 𝐥𝐨𝐰 𝐄𝐂𝐏𝐌 𝐨𝐫 𝐀𝐑𝐏𝐃𝐀𝐔 𝐬𝐢𝐠𝐧𝐚𝐥𝐬 𝐩𝐨𝐨𝐫 𝐭𝐚𝐫𝐠𝐞𝐭𝐢𝐧𝐠.
 𝐓𝐡𝐞𝐬𝐞 𝐪𝐮𝐞𝐫𝐢𝐞𝐬 𝐬𝐞𝐠𝐦𝐞𝐧𝐭 𝐮𝐬𝐞𝐫𝐬 𝐛𝐲 𝐚𝐝 𝐩𝐞𝐫𝐟𝐨𝐫𝐦𝐚𝐧𝐜𝐞 𝐭𝐨 𝐫𝐞𝐟𝐢𝐧𝐞 𝐦𝐞𝐝𝐢𝐚𝐭𝐢𝐨𝐧 𝐬𝐭𝐚𝐜𝐤𝐬 𝐚𝐧𝐝 𝐛𝐨𝐨𝐬𝐭 𝐞𝐂𝐏𝐌.
 
 𝐐𝐮𝐞𝐫𝐲: 𝐀𝐑𝐏𝐃𝐀𝐔 (𝐀𝐯𝐞𝐫𝐚𝐠𝐞 𝐑𝐞𝐯𝐞𝐧𝐮𝐞 𝐏𝐞𝐫 𝐃𝐚𝐢𝐥𝐲 𝐀𝐜𝐭𝐢𝐯𝐞 𝐔𝐬𝐞𝐫)
@@ -138,7 +151,9 @@ FROM daily_user_revenue
 GROUP BY event_date
 ORDER BY event_date DESC;
 
-𝐄𝐱𝐩𝐞𝐜𝐭𝐞𝐝 𝐈𝐧𝐬𝐢𝐠𝐡𝐭𝐬: ARPDAU trending at $0.05—target high-value users for rewarded ads.
+𝐄𝐱𝐩𝐞𝐜𝐭𝐞𝐝 𝐈𝐧𝐬𝐢𝐠𝐡𝐭𝐬:
+
+ARPDAU trending at $0.05—target high-value users for rewarded ads.
 
 𝐐𝐮𝐞𝐫𝐲: 𝐞𝐂𝐏𝐌 𝐀𝐧𝐚𝐥𝐲𝐬𝐢𝐬 (𝐛𝐲 𝐏𝐞𝐫𝐜𝐞𝐧𝐭𝐢𝐥𝐞) 
 
@@ -271,7 +286,9 @@ ORDER BY
   ecpm_percentile;
   
 𝐄𝐱𝐩𝐞𝐜𝐭𝐞𝐝 𝐈𝐧𝐬𝐢𝐠𝐡𝐭𝐬: 
+
 Event Date, Country, Ad Format ,Percentile, Avg eCPM ($)
+
 2025-09-17,US,      Rewarded   4        12.50
 
 Why It Matters: Identifying top 25% users for premium ads lifted eCPM by 25% in past roles
@@ -280,10 +297,12 @@ Why It Matters: Identifying top 25% users for premium ads lifted eCPM by 25% in 
 
 
 𝐏𝐫𝐨𝐛𝐥𝐞𝐦 𝐒𝐭𝐚𝐭𝐞𝐦𝐞𝐧𝐭:
+
 𝟕𝟎% 𝐨𝐟 𝐮𝐬𝐞𝐫𝐬 𝐝𝐫𝐨𝐩 𝐚𝐟𝐭𝐞𝐫 𝐃𝐚𝐲 𝟏—𝐜𝐨𝐡𝐨𝐫𝐭 𝐚𝐧𝐚𝐥𝐲𝐬𝐢𝐬 𝐫𝐞𝐯𝐞𝐚𝐥𝐬 𝐰𝐡𝐲, 𝐞𝐧𝐚𝐛𝐥𝐢𝐧𝐠 𝐭𝐚𝐫𝐠𝐞𝐭𝐞𝐝 𝐫𝐞-𝐞𝐧𝐠𝐚𝐠𝐞𝐦𝐞𝐧𝐭 𝐜𝐚𝐦𝐩𝐚𝐢𝐠𝐧𝐬 𝐭𝐨 𝐦𝐚𝐱𝐢𝐦𝐢𝐳𝐞 𝐋𝐢𝐟𝐞𝐭𝐢𝐦𝐞 𝐕𝐚𝐥𝐮𝐞 (𝐋𝐓𝐕).
 
 
 𝐐𝐮𝐞𝐫𝐲: 𝐃𝐚𝐲-𝐖𝐢𝐬𝐞 𝐑𝐞𝐭𝐞𝐧𝐭𝐢𝐨𝐧 𝐑𝐚𝐭𝐞
+
 WITH first_open AS (
   SELECT 
     user_pseudo_id, 
@@ -319,6 +338,7 @@ ORDER BY event_date DESC;
 
 
 𝐐𝐮𝐞𝐫𝐲: 𝐂𝐨𝐡𝐨𝐫𝐭-𝐁𝐚𝐬𝐞𝐝 𝐋𝐓𝐕
+
 WITH cohort_users AS (
   SELECT
     user_pseudo_id,
@@ -372,6 +392,7 @@ FROM aggregated_data;
 𝐏𝐫𝐨𝐛𝐥𝐞𝐦 𝐒𝐭𝐚𝐭𝐞𝐦𝐞𝐧𝐭: 𝐏𝐥𝐚𝐲𝐞𝐫𝐬 𝐚𝐛𝐚𝐧𝐝𝐨𝐧 𝐚𝐭 𝐬𝐩𝐞𝐜𝐢𝐟𝐢𝐜 𝐥𝐞𝐯𝐞𝐥𝐬—𝐟𝐮𝐧𝐧𝐞𝐥 𝐪𝐮𝐞𝐫𝐢𝐞𝐬 𝐩𝐢𝐧𝐩𝐨𝐢𝐧𝐭 𝐛𝐨𝐭𝐭𝐥𝐞𝐧𝐞𝐜𝐤𝐬, 𝐰𝐡𝐢𝐥𝐞 𝐠𝐚𝐦𝐞𝐩𝐥𝐚𝐲 % 𝐫𝐞𝐯𝐞𝐚𝐥𝐬 𝐩𝐨𝐩𝐮𝐥𝐚𝐫 𝐦𝐢𝐧𝐢-𝐠𝐚𝐦𝐞𝐬 𝐟𝐨𝐫 𝐟𝐞𝐚𝐭𝐮𝐫𝐞 𝐩𝐫𝐢𝐨𝐫𝐢𝐭𝐢𝐳𝐚𝐭𝐢𝐨𝐧.
 
 𝐐𝐮𝐞𝐫𝐲: 𝐋𝐞𝐯𝐞𝐥 𝐃𝐫𝐨𝐩-𝐎𝐟𝐟 𝐏𝐞𝐫𝐜𝐞𝐧𝐭𝐚𝐠𝐞
+
 WITH level_events AS (
   SELECT  
     user_pseudo_id,  
@@ -419,7 +440,9 @@ FROM drop_rates
 ORDER BY event_date, app_version, level ASC;
 
 
-𝐄𝐱𝐩𝐞𝐜𝐭𝐞𝐝 𝐈𝐧𝐬𝐢𝐠𝐡𝐭𝐬: 45% drop at Level 5—add hints to retain 20% more users.
+𝐄𝐱𝐩𝐞𝐜𝐭𝐞𝐝 𝐈𝐧𝐬𝐢𝐠𝐡𝐭𝐬: 
+
+45% drop at Level 5—add hints to retain 20% more users.
 
 𝐐𝐮𝐞𝐫𝐲: % 𝐨𝐟 𝐔𝐬𝐞𝐫𝐬 𝐏𝐥𝐚𝐲𝐢𝐧𝐠 𝐒𝐩𝐞𝐜𝐢𝐟𝐢𝐜 𝐆𝐚𝐦𝐞𝐬
 
