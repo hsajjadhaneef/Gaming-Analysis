@@ -61,12 +61,10 @@ WITH engagement_data AS (
     AND is_active_user = TRUE
     
   GROUP BY event_date, user_pseudo_id, session_id
-  
 )
-
 SELECT 
   FORMAT_DATE('%Y-%m-%d', event_date) AS event_date,
-  
+
   SAFE_DIVIDE(SUM(total_engagement_seconds), COUNT(DISTINCT session_id)) AS avg_engagement_time_per_session
   
 FROM engagement_data
@@ -88,7 +86,6 @@ Event DateAvg Engagement Time (seconds)
 
 𝐐𝐮𝐞𝐫𝐲:  𝐀𝐯𝐞𝐫𝐚𝐠𝐞 𝐒𝐞𝐬𝐬𝐢𝐨𝐧 𝐃𝐮𝐫𝐚𝐭𝐢𝐨𝐧𝐬 (𝐛𝐲 𝐂𝐨𝐮𝐧𝐭𝐫𝐲)
 
-
 WITH session_events AS (
 
   SELECT 
@@ -106,7 +103,6 @@ WITH session_events AS (
   FROM `game-data-analytics.analytics_343585106.events_last_30_days`
   
   WHERE event_name IN ('session_start', 'session_end')
-  
 ),
 
 duration_calc AS (
@@ -128,7 +124,6 @@ duration_calc AS (
   GROUP BY event_date, country, user_pseudo_id
   
 ),
-
 average_session AS (
 
   SELECT 
@@ -145,7 +140,6 @@ average_session AS (
     
     CAST(SAFE_DIVIDE(SUM(total_seconds), NULLIF(SUM(session_count), 0)) AS INT64) AS avg_session_duration_seconds
 
-    
   FROM duration_calc
   
   GROUP BY event_date, country
@@ -153,7 +147,6 @@ average_session AS (
   HAVING active_users >= 100
   
 )
-
 SELECT 
 
   FORMAT_DATE('%Y-%m-%d', event_date) AS event_date,
@@ -171,7 +164,6 @@ SELECT
          MOD(avg_session_duration_seconds, 60)
          
   ) AS avg_session_duration_hms
-  
 FROM average_session
 
 ORDER BY event_date DESC;
@@ -216,7 +208,6 @@ WITH daily_user_revenue AS (
     AND is_active_user = TRUE
     
   GROUP BY event_date, user_pseudo_id
-  
 )
 
 SELECT 
@@ -240,7 +231,6 @@ ARPDAU trending at $0.05—target high-value users for rewarded ads.
 𝐐𝐮𝐞𝐫𝐲: 𝐞𝐂𝐏𝐌 𝐀𝐧𝐚𝐥𝐲𝐬𝐢𝐬 (𝐛𝐲 𝐏𝐞𝐫𝐜𝐞𝐧𝐭𝐢𝐥𝐞) 
 
 WITH
-
 
   ad_data AS (
   
@@ -525,7 +515,6 @@ WITH first_open AS (
   WHERE event_name = 'first_open'
   
 ), 
-
 returning_users AS (
 
   SELECT 
@@ -535,12 +524,10 @@ returning_users AS (
     PARSE_DATE('%Y%m%d', event_date) AS return_date
     
   FROM `game-data-analytics.analytics_343585106.events_last_30_days`
-  
 )
 SELECT 
 
   f.first_open_date AS event_date,
-  
   COUNT(DISTINCT f.user_pseudo_id) AS total_new_users,
   
   -- D1
@@ -734,7 +721,6 @@ drop_rates AS (
     AND l1.event_date = l2.event_date
     
     AND l1.seq_id = l2.seq_id + 1  
-    
 )  
 
 SELECT  
@@ -755,8 +741,6 @@ SELECT
 FROM drop_rates  
 
 ORDER BY event_date, app_version, level ASC;
-
-
 
 𝐄𝐱𝐩𝐞𝐜𝐭𝐞𝐝 𝐈𝐧𝐬𝐢𝐠𝐡𝐭𝐬: 
 
